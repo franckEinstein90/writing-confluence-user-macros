@@ -5,13 +5,16 @@
 #set($containerManager=$getInstanceMethod.invoke(null,null))
 #set($containerContext=$containerManager.containerContext)
 #set($labelManager=$containerContext.getComponent('labelManager'))
+
 #set($pageTitle = $renderContext.getPageTitle())
 
 <script>
    var labels = { "aboriginalaffairs": "Aboriginal Affairs Secretariat",
             "ampd": "AMPD",
             "banff": "Banff",
-            "capebretron": "Cape Breton Island"};
+            "capebretron": "Cape Breton Island",
+            "cfodirectorate" : "CFO Directorate",
+            "coastalbc" : "Coastal B.C."};
 
 $(document).ready(function(){
 
@@ -23,11 +26,29 @@ $(document).ready(function(){
        });
     });
 
+
     $(".custom_label_to_add").click(function(){
-     var bUnitLabel = labels[jQuery(this).val()];
-     jQuery.post(contextPath+"/json/addlabelactivity.action", {"entityIdString": "$content.id", "labelString": jQuery(this).val(), "atl_token": jQuery("#atlassian-token").attr("content") } ,function(){
+          var bUnitLabel = labels[jQuery(this).val()];
+          //other business units are removed (if applicable)
+          $("a.aui-label-split-main").each(function( index ) {
+              if($(this).text() in labels){
+                jQuery.post(contextPath+'/json/removelabelactivity.action',
+                        {'entityIdString': '$content.id',
+                        'labelIdString': $(this).text(),
+                        'atl_token': jQuery('#atlassian-token').attr('content') });
+              }
+          });
+
+     //Selected business unit label is added here
+     jQuery.post(contextPath+"/json/addlabelactivity.action",
+            { "entityIdString": "$content.id",
+              "labelString": jQuery(this).val(),
+              "atl_token": jQuery("#atlassian-token").attr("content") } ,
+              function(){
        $("#flip").text(bUnitLabel);
        $("#panel").slideToggle();
+
+       window.location.reload();
      });
    });
 
@@ -73,10 +94,10 @@ $(document).ready(function(){
 <div id="panel">
 <span id="#labelOptions">
 
-<input type="checkbox" class="custom_label_to_add" value="aboriginalaffairs">Aboriginal Affairs</input>
-<input type="checkbox" class="custom_label_to_add" value="ampd">AMPD</input>
-<input type="checkbox" class="custom_label_to_add" value="banff">Banff</input>
-<input type="checkbox" class="custom_label_to_add" value="capebreton">Cape Breton Island</input>
+<input type="radio" class="custom_label_to_add" value="aboriginalaffairs">Aboriginal Affairs</input>
+<input type="radio" class="custom_label_to_add" value="ampd">AMPD</input>
+<input type="radio" class="custom_label_to_add" value="banff">Banff</input>
+<input type="radio" class="custom_label_to_add" value="capebreton">Cape Breton Island</input>
 </span>
 </div>
 #end
