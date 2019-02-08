@@ -5,38 +5,30 @@
 #set($containerManager=$getInstanceMethod.invoke(null,null))
 #set($containerContext=$containerManager.containerContext)
 #set($labelManager=$containerContext.getComponent('labelManager'))
-
 #set($pageTitle = $renderContext.getPageTitle())
 
+$action.getHelper().renderConfluenceMacro("{005_taxonomy_manager}")
 
-#set($tagListPage = $pageManager.getPage(326271087))
 <script>
 
- var
- var taxonomy = '$tagListPage.getBodyAsString()';
- taxonomy = taxonomy.slice(
-                 taxonomy.indexOf("taxonomy") + 8,
-                 taxonomy.indexOf("/taxonomy") );
 
 
-
-var rawInfo =  taxonomy.split("</tr><tr>").filter(
-  function ( dataRow ) {
-    return (dataRow.indexOf("<td>") > -1);
-  });
-
-
-console.log(rawInfo);
-
-
-   var labels = { "aboriginalaffairs": "Aboriginal Affairs Secretariat",
-            "ampd": "AMPD",
-            "banff": "Banff",
-            "capebretron": "Cape Breton Island",
-            "cfodirectorate" : "CFO Directorate",
-            "coastalbc" : "Coastal B.C."};
 
 $(document).ready(function(){
+
+function makeTaxTermOption(taxTerm){
+      var inputChoice = "<input type=\"radio\" class=\"custom_label_to_add\" value=\"" + taxTerm.confluenceLabel + "\">" + taxTerm.termName + "<\/input>";
+      console.log(inputChoice);
+      $("#labelOptions").append(inputChoice);
+   }
+   taxonomy.forEach(makeTaxTermOption);
+
+  function extractConfluenceLabel(taxTerm){
+    return taxTerm.confluenceLabel;
+}
+
+   var labels = taxonomy.map(extractConfluenceLabel);
+
 
    $( "input[name='variableValues.projectID']" ).change(function(){
        var projID = $(this).val();
@@ -46,12 +38,11 @@ $(document).ready(function(){
        });
     });
 
-
     $(".custom_label_to_add").click(function(){
-          var bUnitLabel = labels[jQuery(this).val()];
-          //other business units are removed (if applicable)
-          $("a.aui-label-split-main").each(function( index ) {
-              if($(this).text() in labels){
+     var bUnitLabel = jQuery(this).val();
+     //other business units are removed (if applicable)
+     $("a.aui-label-split-main").each(function( index ) {
+              if($(this).val() in labels){
                 jQuery.post(contextPath+'/json/removelabelactivity.action',
                         {'entityIdString': '$content.id',
                         'labelIdString': $(this).text(),
@@ -59,16 +50,16 @@ $(document).ready(function(){
               }
           });
 
-     //Selected business unit label is added here
+     //Selected business unit label is added
      jQuery.post(contextPath+"/json/addlabelactivity.action",
-            { "entityIdString": "$content.id",
-              "labelString": jQuery(this).val(),
-              "atl_token": jQuery("#atlassian-token").attr("content") } ,
-              function(){
-       $("#flip").text(bUnitLabel);
-       $("#panel").slideToggle();
-
-       window.location.reload();
+                 {"entityIdString": "$content.id",
+                  "labelString": jQuery(this).val(),
+                  "atl_token": jQuery("#atlassian-token").attr("content") } ,
+                   function(){
+                           $("#flip").text(bUnitLabel);
+                           $("#panel").slideToggle();
+                           //Page is reloded to show changes
+                          window.location.reload();
      });
    });
 
@@ -76,7 +67,8 @@ $(document).ready(function(){
    // and find out which ones are business units
    $("a.aui-label-split-main").each(function( index ) {
        if($(this).text() in labels){
-          $("#flip").text(labels[$(this).text()]);
+          var confLabel = $(this).text();
+          $("#flip").text(confLabel);
        }
    });
 
@@ -86,9 +78,7 @@ $(document).ready(function(){
    });
  });
 
-  function createLabelOption(label, index, array){
-     $("#labelOptions").html($("#labelOptions").html() + label);
-  }
+
 </script>
 
 <style>
@@ -112,12 +102,8 @@ $(document).ready(function(){
 #if ($pageTitle)
 <div id="flip">Click here to select a Business Unit</div>
 <div id="panel">
-<span id="#labelOptions">
+<span id="labelOptions">
 
-<input type="radio" class="custom_label_to_add" value="aboriginalaffairs">Aboriginal Affairs</input>
-<input type="radio" class="custom_label_to_add" value="ampd">AMPD</input>
-<input type="radio" class="custom_label_to_add" value="banff">Banff</input>
-<input type="radio" class="custom_label_to_add" value="capebreton">Cape Breton Island</input>
 </span>
 </div>
 #end
