@@ -10,10 +10,6 @@
 $action.getHelper().renderConfluenceMacro("{005_taxonomy_manager}")
 
 <script>
-
-
-
-
 $(document).ready(function(){
 
 function makeTaxTermOption(taxTerm){

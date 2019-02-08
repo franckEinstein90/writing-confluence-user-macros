@@ -26,13 +26,22 @@
 
   function strToTaxonomyTerm (rawInfoLine){
       var taxTerm = new taxonomyTerm(rawInfoLine);
-       console.log("===>" + taxTerm.termName + "----" + taxTerm.confluenceLabel);
       return taxTerm;
   }
-  var taxonomy =  rawInfo.map(strToTaxonomyTerm);
 
+var taxonomy =  rawInfo.map(strToTaxonomyTerm);
+  function isTaxonomyConfluenceLabel(taxTerm, confluenceLabel){
+console.log(confluenceLabel + "----" + taxTerm.confluenceLabel);
+    if(taxTerm.confluenceLabel.localeCompare(confluenceLabel) == 0){
+           console.log("match");
+           return true;
+    }
+return false;
+  }
+  function getTermName(confluenceLabel){
+    var term = taxonomy.find(function (taxTerm) {isTaxonomyConfluenceLabel(taxTerm, confluenceLabel)});
+    console.log(term.termName);
+    return term.termName;
+  }
 
 </script>
-<span id="display">
-
-</span>
