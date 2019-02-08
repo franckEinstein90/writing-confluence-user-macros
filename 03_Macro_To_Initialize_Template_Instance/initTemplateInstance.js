@@ -7,15 +7,27 @@
 #set($labelManager=$containerContext.getComponent('labelManager'))
 
 #set($pageTitle = $renderContext.getPageTitle())
+
+
 #set($tagListPage = $pageManager.getPage(326271087))
 <script>
+
+ var
  var taxonomy = '$tagListPage.getBodyAsString()';
  taxonomy = taxonomy.slice(
                  taxonomy.indexOf("taxonomy") + 8,
                  taxonomy.indexOf("/taxonomy") );
 
-  var rawInfo =  taxonomy.split("</tr><tr>");
-  console.log(rawInfo);
+
+
+var rawInfo =  taxonomy.split("</tr><tr>").filter(
+  function ( dataRow ) {
+    return (dataRow.indexOf("<td>") > -1);
+  });
+
+
+console.log(rawInfo);
+
 
    var labels = { "aboriginalaffairs": "Aboriginal Affairs Secretariat",
             "ampd": "AMPD",
