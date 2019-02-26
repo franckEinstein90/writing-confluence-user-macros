@@ -18,7 +18,7 @@ function makeTaxTermOption(taxTerm){
      $("#businessunitlist").append(inputChoice);
    }
 
-$(document).ready(function(){
+AJS.toInit(function(){
   //populate the business unit pick list using the values in the taxonomy
   taxonomy.terms.forEach(makeTaxTermOption);
 
@@ -36,7 +36,7 @@ $(document).ready(function(){
        }
    });
 
-   $( "input[name='variableValues.projectID']" ).prop("data-aui-validation-bid", "foo");
+   $( "input[name='variableValues.projectID']" ).attr("data-aui-validation-bid", "foo");
    $( "input[name='variableValues.projectID']" ).change(function(){
        var projID = $(this).val();
        $( "input[name='variableValues.projectName']" ).change(function(){
