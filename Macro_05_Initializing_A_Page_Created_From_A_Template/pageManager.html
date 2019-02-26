@@ -7,25 +7,36 @@
 #set($labelManager=$containerContext.getComponent('labelManager'))
 #set($pageTitle = $renderContext.getPageTitle())
 
-$action.getHelper().renderConfluenceMacro("{005_taxonomy_manager}")
+$action.getHelper().renderConfluenceMacro("{005_taxonomy_manager_dev}")
 
 <script>
-$(document).ready(function(){
+
 
 function makeTaxTermOption(taxTerm){
-      var inputChoice = "<input type=\"radio\" class=\"custom_label_to_add\" value=\"" + taxTerm.confluenceLabel + "\">" + taxTerm.termName + "<\/input>";
+      var inputChoice = "<option value=\"" + taxTerm.termValue +"\" class=\"custom_label_to_add\" >" + taxTerm.termName + "<\/option>"
       console.log(inputChoice);
-      $("#labelOptions").append(inputChoice);
+     $("#businessunitlist").append(inputChoice);
    }
-   taxonomy.forEach(makeTaxTermOption);
+
+$(document).ready(function(){
+  //populate the business unit pick list using the values in the taxonomy
+  taxonomy.terms.forEach(makeTaxTermOption);
 
   function extractConfluenceLabel(taxTerm){
-    return taxTerm.confluenceLabel;
-}
-
-   var labels = taxonomy.map(extractConfluenceLabel);
+      return taxTerm.termValue;
+   }
 
 
+   //Form Value Validation
+   AJS.formValidation.register(['bid'], function(field) {
+       if (field.el.value.indexOf(field.args('startswith')) !== 0){
+           field.invalidate(AJS.format('Input must start with {0}', field.args('bid')));
+       } else {
+           field.validate();
+       }
+   });
+
+   $( "input[name='variableValues.projectID']" ).prop("data-aui-validation-bid", "foo");
    $( "input[name='variableValues.projectID']" ).change(function(){
        var projID = $(this).val();
        $( "input[name='variableValues.projectName']" ).change(function(){
@@ -34,37 +45,39 @@ function makeTaxTermOption(taxTerm){
        });
     });
 
-    $(".custom_label_to_add").click(function(){
-     var bUnitLabel = jQuery(this).val();
-     //other business units are removed (if applicable)
-     $("a.aui-label-split-main").each(function( index ) {
-              if($(this).val() in labels){
-                jQuery.post(contextPath+'/json/removelabelactivity.action',
-                        {'entityIdString': '$content.id',
-                        'labelIdString': $(this).text(),
-                        'atl_token': jQuery('#atlassian-token').attr('content') });
-              }
-          });
+    //handler for when user selects a business unit
+    $("#businessunitlist").change(function(){
+            var bUnitLabel = $(this).val();
+            console.log(bUnitLabel);
+            $("a.aui-label-split-main").each(function( index ) {
+                    if(taxonomy.labels.includes($(this).text())){
+                      jQuery.post(contextPath+'/json/removelabelactivity.action',
+                              {'entityIdString': '$content.id',
+                              'labelIdString': $(this).text(),
+                              'atl_token': jQuery('#atlassian-token').attr('content') });
+                    }
+                });
+                jQuery.post(contextPath+"/json/addlabelactivity.action",
+                          {"entityIdString": "$content.id",
+                           "labelString": jQuery(this).val(),
+                           "atl_token": jQuery("#atlassian-token").attr("content") } ,
+                            function(){
+                                    //display the chosen business unit label on the flip panel and close it
+                                    $("#flip").text(bUnitLabel);
+                                    $("#panel").slideToggle();
+                                    //Page is reloded to show changes
+                                   window.location.reload();
+              });
 
-     //Selected business unit label is added
-     jQuery.post(contextPath+"/json/addlabelactivity.action",
-                 {"entityIdString": "$content.id",
-                  "labelString": jQuery(this).val(),
-                  "atl_token": jQuery("#atlassian-token").attr("content") } ,
-                   function(){
-                           $("#flip").text(bUnitLabel);
-                           $("#panel").slideToggle();
-                           //Page is reloded to show changes
-                          window.location.reload();
-     });
-   });
+
+    });
 
    // go through the list of labels assigned to the page
    // and find out which ones are business units
    $("a.aui-label-split-main").each(function( index ) {
-       if($(this).text() in labels){
+      if(taxonomy.labels.includes($(this).text())){
           var confLabel = $(this).text();
-          $("#flip").text(confLabel);
+          $("#flip").text(taxonomy.getTermName(confLabel));
        }
    });
 
@@ -94,12 +107,15 @@ function makeTaxTermOption(taxTerm){
 
 
 
-
 #if ($pageTitle)
 <div id="flip">Click here to select a Business Unit</div>
 <div id="panel">
-<span id="labelOptions">
-
-</span>
+  <form class="aui">
+    <div class="field-group">
+      <label for>Business Unit</label>
+      <select name="businessUnits" id="businessunitlist" class="select">
+      </select>
+      </div>
+</form>
 </div>
 #end

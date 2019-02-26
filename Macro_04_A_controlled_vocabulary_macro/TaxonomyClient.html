@@ -2,46 +2,54 @@
 #set($tagListPage = $pageManager.getPage(326271087))
 
 <script>
-
- function taxonomyTerm(rawInfoStr){
-    var re = /\<td\>(.+)?\<\/td\>\<td\>(.+)\<\/td\>/;
-    var vals = re.exec(rawInfoStr);
-  //  console.log(vals)
-    this.termName = vals[1];
-    this.confluenceLabel = vals[2];
-    this.Display = function(){
-      alert(this.termName + "--" + this.confluenceLabel);
+    function newTaxonomyTerm(tN, tV){
+        var newTerm = {
+            termName : tN,
+            termValue : tV
+        };
+        return newTerm;
     }
-  }
 
- var rawContent = '$tagListPage.getBodyAsString()';
- rawContent = rawContent.slice(
+    function newTaxonomy(){
+        var taxonomy = {
+            terms:[],
+            labels:[],
+            insertTerm : function(taxTerm){
+               this.terms.push(taxTerm);
+               this.labels.push(taxTerm.termValue);
+            },
+            getTermName : function(termLabel){
+                var labelIdx = this.labels.indexOf(termLabel);
+                if (labelIdx > -1) return this.terms[labelIdx].termName;
+              }
+        };
+        return taxonomy;
+    }
+    var taxonomy = newTaxonomy();
+
+    function extractInfo(infoLine, index, array){
+        var re = /\<td\>(.+)?\<\/td\>\<td\>(.+)\<\/td\>/;
+        var vals = re.exec(infoLine);
+        if (vals) {
+         termName = vals[1];
+         confluenceLabel = vals[2];
+         var newTerm = newTaxonomyTerm(termName, confluenceLabel);
+         taxonomy.insertTerm(newTerm);
+        }
+    }
+
+    $(document).ready(function(){
+    	var rawContent = '$tagListPage.getBodyAsString()';
+	var re = /(\<table.+\<\/table\>)/;
+	 rawContent = re.exec(rawContent.slice(
                  rawContent.indexOf("taxonomy") + 8,
-                 rawContent.indexOf("/taxonomy") );
+                 rawContent.indexOf("/taxonomy") ))[1];
 
-  var rawInfo =  rawContent.split("</tr><tr>").filter(
-   function ( dataRow ) {
-    return (dataRow.indexOf("<td>") > -1);
-  });
-
-  function strToTaxonomyTerm (rawInfoLine){
-      var taxTerm = new taxonomyTerm(rawInfoLine);
-      return taxTerm;
-  }
-
-var taxonomy =  rawInfo.map(strToTaxonomyTerm);
-  function isTaxonomyConfluenceLabel(taxTerm, confluenceLabel){
-console.log(confluenceLabel + "----" + taxTerm.confluenceLabel);
-    if(taxTerm.confluenceLabel.localeCompare(confluenceLabel) == 0){
-           console.log("match");
-           return true;
-    }
-return false;
-  }
-  function getTermName(confluenceLabel){
-    var term = taxonomy.find(function (taxTerm) {isTaxonomyConfluenceLabel(taxTerm, confluenceLabel)});
-    console.log(term.termName);
-    return term.termName;
-  }
+      //var rawContent now contains the html
+      //of the table with id "taxonomy"
+      rawInfo =  rawContent.split("</tr>");
+      rawInfo.forEach(extractInfo);
+      console.log(taxonomy);
+    });
 
 </script>
