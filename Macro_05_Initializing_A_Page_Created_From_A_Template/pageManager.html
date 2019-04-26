@@ -7,7 +7,7 @@
 #set($labelManager=$containerContext.getComponent('labelManager'))
 #set($pageTitle = $renderContext.getPageTitle())
 
-$action.getHelper().renderConfluenceMacro("{005_taxonomy_manager_dev}")
+$action.getHelper().renderConfluenceMacro("{005_taxonomy_manager:spacekey='IPP'|page='Business Unit Labels for IPP Space'}")
 
 <script>
 
@@ -27,23 +27,28 @@ AJS.toInit(function(){
    }
 
 
-   //Form Value Validation
-   AJS.formValidation.register(['bid'], function(field) {
-       if (field.el.value.indexOf(field.args('startswith')) !== 0){
-           field.invalidate(AJS.format('Input must start with {0}', field.args('bid')));
-       } else {
-           field.validate();
-       }
+ $("form[name='filltemplateform']").submit(function(event){
+     let projID = $( "input[name='variableValues.projectID']" ).val();
+     if (projID.length < 2 || isNaN(projID)){
+       AJS.flag({
+         type: 'error',
+         title: 'Invalid Project Number',
+         body: 'The Project Number is a 2 to 5 digits numerical value '
+       });
+       event.preventDefault();
+     }
+     $("form[name='filltemplateform']").find("input[name='title']").val(
+        projID + " - " +  $( "input[name='variableValues.projectName']" ).val());
    });
 
-   $( "input[name='variableValues.projectID']" ).attr("data-aui-validation-bid", "foo");
-   $( "input[name='variableValues.projectID']" ).change(function(){
-       var projID = $(this).val();
-       $( "input[name='variableValues.projectName']" ).change(function(){
-             projID = projID + " - " + $(this).val();
-             $("form[name='filltemplateform']").find("input[name='title']").val(projID);
-       });
-    });
+   $( "input[name='variableValues.projectID']" ).attr("data-aui-notification-field","");
+   $( "input[name='variableValues.projectID']" ).attr("data-aui-notification-info","Choose a username at least 6 characters long");
+
+   $( "input[name='variableValues.projectID']" ).attr("minlength", "2");
+   $( "input[name='variableValues.projectID']" ).attr("maxlength", "5");
+
+
+
 
     //handler for when user selects a business unit
     $("#businessunitlist").change(function(){

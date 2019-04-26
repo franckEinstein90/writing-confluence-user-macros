@@ -1,0 +1,187 @@
+<html>
+	<head>
+		<!--  AUI Core -->
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script src="http://aui-cdn.atlassian.com/aui-adg/6.0.6/js/aui.min.js"></script>
+<link rel="stylesheet" href="http://aui-cdn.atlassian.com/aui-adg/6.0.6/css/aui.min.css" media="all">
+<!-- AUI Experimental components -->
+<link rel="stylesheet" href="http://aui-cdn.atlassian.com/aui-adg/6.0.6/css/aui-experimental.min.css" media="all">
+<script src="http://aui-cdn.atlassian.com/aui-adg/6.0.6/js/aui-experimental.min.js"></script>
+
+<!-- AUI Datepicker and Soy templates -->
+
+	</head>
+
+	<body>
+
+	<section role="dialog" id="event-dialog" class="aui-layer aui-dialog2 aui-dialog2-medium" aria-hidden="true">
+    <!-- Dialog header -->
+    <header class="aui-dialog2-header">
+        <!-- The dialog's title -->
+        <h2 class="aui-dialog2-header-main">New Event</h2>
+        <!-- Actions to render on the right of the header -->
+       <!-- Close icon -->
+        <a class="aui-dialog2-header-close">
+            <span class="aui-icon aui-icon-small aui-iconfont-close-dialog">Close</span>
+        </a>
+    </header>
+    <!-- Main dialog content -->
+    <div class="aui-dialog2-content">
+        <form name="event-edit" class="aui event-edit" method="POST" action="#">
+<fieldset>
+ <div class="field-group">
+            <label for="dBase">Event Type</label>
+            <select class="select" id="dBase" name="dBase" title="database select">
+                <option>Event</option>
+                <option>Leave</option>
+                <option>JIRA Issue Dates</option>
+                <option>JIRA Agile Sprints</option>
+            </select>
+        </div>
+        <div class="field-group">
+            <label for="d-fname">What<span class="aui-icon icon-required"> required</span></label>
+            <input class="text" type="text" id="d-fname" name="d-fname" title="first name">         
+        </div>
+       <div class="field-group">
+            <label for="who">Who<span class="aui-icon icon-required"> required</span></label>
+            <input class="text" type="text" id="who" name="who" title="who">         
+        </div>
+      <div class="field-group">
+           <label for="begin-date">When<span class="aui-icon icon-required"> required</span></label>
+            <input id="begin-date" type="date" /> to 
+            <input id="end-date" type="date" />
+        </div>
+<div class="field-group">
+            <label for="descr">Description</label>
+            <textarea class="textarea" rows="6" cols="10" name="descr" id="descr"></textarea>
+        </div>
+</fieldset>
+</form>
+	    
+    </div>
+    <!-- Dialog footer -->
+    <footer class="aui-dialog2-footer">
+        <!-- Actions to render on the right of the footer -->
+        <div class="aui-dialog2-footer-actions">
+            <button id="dialog-submit-button" class="aui-button aui-button-primary">OK</button>
+            <button id="dialog-close-button" class="aui-button aui-button-link">Cancel</button>
+        </div>
+        <!-- Hint text is rendered on the left of the footer -->
+        <div class="aui-dialog2-footer-hint">create a new event</div>
+    </footer>
+</section>
+		<h1>Calendar Demo</h1>
+		<script type= "text/javascript" defer="defer">
+			
+  // find elements
+  /*******************
+    UTILITY FUNCTIONS
+  ********************/
+  // day of week of month's first day
+  function getFirstDay(theYear, theMonth){
+      return new Date(theYear,theMonth,1).getDay();
+  }
+  // number of days in the month
+  function getMonthLen(theYear, theMonth) {
+      let oneDay = 1000 * 60 * 60 * 24;
+      let thisMonth = new Date(theYear, theMonth, 1);
+      let nextMonth = new Date(theYear, theMonth + 1, 1);
+      let len = Math.ceil((nextMonth.getTime() -
+          thisMonth.getTime())/oneDay);
+      return len
+  }
+  // create array of English month names
+  var theMonths = ["January","February","March","April","May","June","July","August",
+  "September","October","November","December"];
+
+
+  function populateTable(form) {
+    let theMonth = form.chooseMonth.selectedIndex;
+    let theYear = parseInt(form.chooseYear.options[form.chooseYear.selectedIndex].text);
+    // initialize date-dependent variables
+    let firstDay = getFirstDay(theYear, theMonth);
+    let howMany = getMonthLen(theYear, theMonth);
+    $("#tableHeader").html(theMonths[theMonth] + " " + theYear);
+
+   // initialize vars for table creation
+    let dayCounter = 1;
+    $("#tableBody").html("");
+    while (dayCounter <= howMany) {
+	  console.log($("#tableBody tr").length, "aaa");
+	  let newRow = "<TR>";
+	  let addedDays = [];
+	  for(let i=0; i<7; i++){
+		  if(dayCounter > howMany) {break;}
+		  if(($("#tableBody tr").length >= 1) || (i >= firstDay)){
+			  let dayID = 
+				  `${theYear}-${(theMonth+1).toString().padStart(2,'0')}-${dayCounter.toString().padStart(2,'0')}`;
+			  addedDays.push(dayID);
+			  newRow += `<td id="${dayID}"> ${dayCounter++} </td>`;
+		  }
+		  else{
+			  newRow += "<td></td>";
+		  }
+	  }
+	  newRow += "</tr>";
+	  $("#tableBody").append(newRow);
+	  //Add event handler for each day
+	  addedDays.forEach(x => AJS.$("#"+x).click(function(){ showDayDialog(x); }));
+    }
+  }
+
+function showDayDialog(dayID){
+	$("#begin-date").prop( "value", dayID);
+	$("#end-date").prop( "value", dayID);
+	AJS.dialog2("#event-dialog").show();//(dayID);
+}
+
+function fillYears() {
+      var today = new Date();
+      var thisYear = today.getFullYear();
+      var yearChooser = document.dateChooser.chooseYear;
+      for (i = thisYear; i < thisYear + 5; i++) {
+          yearChooser.options[yearChooser.options.length] = new Option(i, i)
+      }
+      setCurrMonth(today)
+  }
+  function setCurrMonth(today) {
+      document.dateChooser.chooseMonth.selectedIndex = today.getMonth()
+  }
+
+    AJS.toInit(function(){
+	    fillYears();
+	    $("#dateChooser").change(function(){
+		 populateTable(document.dateChooser);
+	    });
+	    populateTable(document.dateChooser);
+  });
+
+</script>
+
+<HR>
+<TABLE ID="calendarTable" class="aui">
+<TR>
+    <TH ID="tableHeader" COLSPAN=7></TH>
+</TR>
+<TR><TH>Sun</TH><TH>Mon</TH><TH>Tue</TH><TH>Wed</TH>
+<TH>Thu</TH><TH>Fri</TH><TH>Sat</TH></TR>
+<TBODY ID="tableBody"></TBODY>
+<TR>
+    <TD COLSPAN=7>
+    <FORM name="dateChooser" ID="dateChooser" class="aui">
+        <SELECT ID="chooseMonth" name="chooseMonth">
+            <OPTION SELECTED>January<OPTION>February
+            <OPTION>March<OPTION>April<OPTION>May
+            <OPTION>June<OPTION>July<OPTION>August
+            <OPTION>September<OPTION>October
+            <OPTION>November<OPTION>December
+    </SELECT>
+    <SELECT NAME="chooseYear">
+    </SELECT>
+    </FORM>
+   </TD>
+</TR>
+</TABLE>
+
+	</body>
+</html>

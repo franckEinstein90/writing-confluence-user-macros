@@ -1,6 +1,24 @@
-## @noparams
-#set($tagListPage = $pageManager.getPage(326271087))
+## MACRO: taxonomy Manager
+## @param page:title=Page Title|type=string|required=false|desc=Title of page which attachments should be listed|default=current page
+## @param spacekey:title=Space |type=string|required=true|desc=space key
 
+
+#if ($parampage && $parampage.length() > 0)
+  ## get page manager...
+  #set($containerManagerClass=$content.class.forName('com.atlassian.spring.container.ContainerManager'))
+  #set($getInstanceMethod=$containerManagerClass.getDeclaredMethod('getInstance',null))
+  #set($containerManager=$getInstanceMethod.invoke(null,null))
+  #set($containerContext=$containerManager.containerContext)
+  #set($pageManager=$containerContext.getComponent('pageManager'))
+  ## find page...
+  #set ($tagListPage = "")
+
+#if ($pageManager)
+    #set ($tagListPage = $pageManager.getPage($paramspacekey, $parampage))
+#end
+
+#if ($tagListPage)
+$tagListPage.getContentId().toString()
 <script>
     function newTaxonomyTerm(tN, tV){
         var newTerm = {
@@ -39,9 +57,9 @@
     }
 
     $(document).ready(function(){
-    	var rawContent = '$tagListPage.getBodyAsString()';
-	var re = /(\<table.+\<\/table\>)/;
-	 rawContent = re.exec(rawContent.slice(
+      var rawContent = '$tagListPage.getBodyAsString()';
+	    var re = /(\<table.+\<\/table\>)/;
+	    rawContent = re.exec(rawContent.slice(
                  rawContent.indexOf("taxonomy") + 8,
                  rawContent.indexOf("/taxonomy") ))[1];
 
@@ -53,3 +71,12 @@
     });
 
 </script>
+
+
+
+
+
+  #else
+      <b>$parampage not found :(</b>
+  #end
+#end

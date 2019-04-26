@@ -1,0 +1,18 @@
+## Macro title: test macro form
+## Macro has a body:  N
+## Body processing: Selected body processing option
+## Output: Selected output option
+##
+## Developed by: My Name
+## Date created: dd/mm/yyyy
+## Installed by: My Name
+
+## @noparams
+
+ $action.getHelper().renderConfluenceMacro("{003_modal_form}")
+
+<script type= "text/javascript" defer="defer">
+   AJS.toInit(function( ){
+     formManager.createForm("testForm");
+   });
+</script>

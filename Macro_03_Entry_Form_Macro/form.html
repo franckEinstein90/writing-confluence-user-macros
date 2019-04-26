@@ -1,0 +1,30 @@
+## Macro title: 003_modal_form
+## Macro has a body: N
+
+## Developed by: Franck Binard
+## Installed by: Franck Binard
+## @noparams
+
+
+
+
+  <script>
+  let formManager = (function(){
+    return{
+      createForm : function(formID){
+        AJS.$( "div #main-content").append(
+               "<section id='" + formID+ "' class='aui-dialog2 aui-dialog2-medium aui-layer' role='dialog' aria-hidden='false'>" +
+               "<header class='aui-dialog2-header'>" + formID +
+               "</header>" +
+              "<div class='aui-dialog2-content'>" +
+              "</div>" +
+              "<footer class='aui-dialog2-footer'>" +
+              "<div class='aui-dialog2-footer-actions'>" +
+              "<button class='aui-button'>Cancel</button>" +
+              "<button class='aui-button aui-button-primary'>OK</button>" +
+              "</div></footer></section>");
+     }
+   }
+ })();
+
+</script>

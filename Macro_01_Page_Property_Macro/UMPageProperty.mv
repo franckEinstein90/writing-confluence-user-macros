@@ -1,11 +1,13 @@
 ## @noparams
 
-#set ($properties = $content.getProperties().asList())
 <UL>
 
 <LI>Title: <b>$content.getTitle()</b></LI>
 <LI>Page ID: $content.getId().toString()</LI>
 <LI>Content Status: $content.getContentStatus()</LI>
+
+#set ($properties = $content.getProperties().asList())
+
 <LI>Parent ID: $content.getParentId().toString()</LI>
 #foreach ($property in $properties)
   <LI>$property.getName(): $property.getStringValue()</LI>
