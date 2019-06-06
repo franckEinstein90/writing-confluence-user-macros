@@ -1,16 +1,73 @@
+## Macro title:Page Information
+## Macro has a body: N
+##
+## Developed by:Franck Binard
+## Date created: dd/07/yyyy
+## Installed by:Franck Binard
+
 ## @noparams
 
+<script type= "text/javascript" defer="defer">
+
+ const confluencePage = (function() {
+      return {
+        ConfPage: function(pageID){
+            this.pageID = pageID;
+            this.path = contextPath + "/rest/api/content/" + this.pageID;
+            this.result = jQuery.getValues(this.path + "?expand=body.storage,version");
+            this.pageTitle = this.result["title"];
+            this.versionNumber = this.result["version"]["number"];
+            this.pageBody = this.result["body"]["storage"]["value"];
+        }
+      }
+    })();
+
+AJS.toInit(function($){
+   //necessary to get the variables from the
+   //request
+   jQuery.extend({
+       getValues:function(url){
+         var result=null;
+         jQuery.ajax({
+           url:url,
+           type: 'get',
+           async:false,
+           success: function(data){
+             result=data;
+           }
+         });
+         return result;
+       }
+   });
+
+   let pageStatus = "$content.getContentStatus()",
+   pageProperties = [
+     #set ($properties = $content.getProperties().asList())
+     #foreach ($property in $properties)
+       {"$property.getName()": "$property.getStringValue()"},
+     #end
+   ],
+  currentConfPage = new confluencePage.ConfPage($content.getIdAsString());
+
+  $("#pageID").text(currentConfPage.pageID);
+  $("#pageTitle").text(currentConfPage.pageTitle);
+  $("#versionNumber").text(currentConfPage.versionNumber);
+  $("#pageBodyText").text(currentConfPage.pageBody);
+
+ });
+</script>
+
 <UL>
-
-<LI>Title: <b>$content.getTitle()</b></LI>
-<LI>Page ID: $content.getId().toString()</LI>
-<LI>Content Status: $content.getContentStatus()</LI>
-
-#set ($properties = $content.getProperties().asList())
-
-<LI>Parent ID: $content.getParentId().toString()</LI>
-#foreach ($property in $properties)
-  <LI>$property.getName(): $property.getStringValue()</LI>
-#end
-  <LI>page ID: $content.id
+<LI>Page ID of this page <strong><span id="pageID"></span></strong>
+<LI>Current Title of this page <strong><span id="pageTitle"></span></strong>
+<LI>Current Version Number of this page: <strong><span id="versionNumber"></span></strong>
 </UL>
+
+<form class="aui">
+ <fieldset>
+ <legend><span>Body of page</span></legend>
+ <div class="field-group">
+   <label for"pageBodyText">Body of page</label>
+   <textarea class="textarea" name="pageBody" id="pageBodyText" placeholder="page body appears here"></textarea>
+ </fieldset>
+</form>
